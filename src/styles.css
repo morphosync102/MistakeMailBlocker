@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply box-border;
+  }
+  
+  body {
+    @apply m-0 p-0 font-sans;
+  }
+}
+
+@layer components {
+  .status-badge {
+    @apply px-3 py-1 rounded-md font-bold text-sm inline-block min-w-[60px] text-center;
+  }
+  
+  .status-ok {
+    @apply text-green-700;
+  }
+  
+  .status-warning {
+    @apply bg-orange-100 text-orange-700;
+  }
+  
+  .status-error {
+    @apply bg-red-100 text-red-700;
+  }
+  
+  .section-box {
+    @apply bg-white rounded-lg p-4 mb-4 border border-gray-200 shadow-sm;
+  }
+  
+  .modal-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000];
+  }
+  
+  .modal-content {
+    @apply bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden;
+  }
+  
+  .btn {
+    @apply px-6 py-2 rounded-lg font-semibold transition-all duration-200 ease-in-out;
+  }
+  
+  .btn-primary {
+    @apply bg-blue-600 text-white hover:bg-blue-700 active:scale-95;
+  }
+  
+  .btn-danger {
+    @apply bg-red-600 text-white hover:bg-red-700 active:scale-95;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-700 hover:bg-gray-300 active:scale-95;
+  }
+  
+  .btn:disabled {
+    @apply opacity-50 cursor-not-allowed active:scale-100;
+  }
+}

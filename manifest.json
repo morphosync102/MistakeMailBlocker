@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Gmail誤送信防止",
+  "version": "1.0.0",
+  "description": "Gmailでのメール誤送信を防止するための確認ダイアログを表示します",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://mail.google.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://mail.google.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "icons": {
+    "128": "icons/icon.svg"
+  }
+}
