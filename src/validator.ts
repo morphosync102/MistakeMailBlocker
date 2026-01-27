@@ -19,7 +19,7 @@ export function validateEmail(emailData: EmailData): CheckResults {
     // 送信元チェック (個人利用なので常にOK、確認のみ)
     const senderCheck = {
         status: 'ok' as const,
-        message: '送信元を確認してください',
+        message: `送信元: ${emailData.sender}\n正しいアカウントから送信していますか？`,
         checkboxRequired: true, // 念のためチェックさせる
     };
 
@@ -48,17 +48,22 @@ export function validateEmail(emailData: EmailData): CheckResults {
             checkboxRequired: true,
         };
     } else if (emailData.attachments.length > 0) {
-        // 添付ファイルあり (ZIPチェック等はなし)
+        // 添付ファイルあり (中身を確認させるためにwarningにする)
+        const hasZip = emailData.attachments.some(f => f.toLowerCase().endsWith('.zip'));
+        const suffix = hasZip
+            ? '\nZIPファイルが添付されています。パスワードを設定したか確認してください。'
+            : 'が添付されています。';
+
         attachmentsCheck = {
-            status: 'ok' as const,
-            message: emailData.attachments.join('\n'),
-            checkboxRequired: false,
+            status: 'warning' as const,
+            message: emailData.attachments.join('\n') + suffix,
+            checkboxRequired: true,
         };
     } else {
         // 添付ファイルなし
         attachmentsCheck = {
             status: 'ok' as const,
-            message: '添付ファイルはありません。',
+            message: 'ファイルは添付されていません',
             checkboxRequired: false,
         };
     }

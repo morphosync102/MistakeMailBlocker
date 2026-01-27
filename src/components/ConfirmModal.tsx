@@ -8,7 +8,7 @@ interface ConfirmModalProps {
     sendCode: string;
     onBack: () => void;
     onCancel: () => void;
-    onSend: () => void;
+    onNext: () => void;
 }
 
 export const ConfirmModal: React.FC<ConfirmModalProps> = ({
@@ -17,7 +17,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
     sendCode,
     onBack,
     onCancel,
-    onSend,
+    onNext,
 }) => {
     const [inputCode, setInputCode] = useState('');
 
@@ -124,11 +124,11 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
                             送信キャンセル
                         </button>
                         <button
-                            onClick={onSend}
+                            onClick={onNext}
                             className="btn btn-danger"
                             disabled={!canSend}
                         >
-                            送信
+                            次へ
                         </button>
                     </div>
                 </div>

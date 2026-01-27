@@ -6,6 +6,9 @@ import { extractDomain, hasAttachmentKeywords } from './utils';
  */
 export function extractEmailData(): EmailData | null {
     try {
+        // 送信元の取得
+        const sender = extractSender();
+
         // 送信先の取得
         const recipients = extractRecipients();
 
@@ -19,6 +22,7 @@ export function extractEmailData(): EmailData | null {
         const attachments = extractAttachments();
 
         return {
+            sender,
             recipients,
             subject,
             body,
@@ -30,6 +34,22 @@ export function extractEmailData(): EmailData | null {
         console.error('メールデータの抽出に失敗しました:', error);
         return null;
     }
+}
+
+/**
+ * 送信元メールアドレスを抽出
+ */
+function extractSender(): string {
+    const fromField = document.querySelector('[name="from"]') as HTMLInputElement;
+    if (fromField && fromField.value) {
+        return fromField.value;
+    }
+
+    // name="from"がない場合（エイリアスがない場合など）、タイトルバーやその他の場所から探す
+    // 一般的なGmailのtitleは "Subject - AccountEmail - Gmail" となっていることが多いが不確実
+    // データ属性を探す
+    // 基本的には name="from" があるはずだが、ない場合は "自分" として扱うか、空文字
+    return '（取得できませんでした）';
 }
 
 /**
@@ -50,19 +70,24 @@ function extractRecipients(): Recipient[] {
         if (!field) return;
 
         // Gmailの送信先要素を取得
-        const recipientElements = field.querySelectorAll('[email]');
+        // [email]属性または [data-hovercard-id]属性を持つ要素を探す
+        const recipientElements = field.querySelectorAll('[email], [data-hovercard-id]');
 
         recipientElements.forEach((elem) => {
             const email = elem.getAttribute('email') || elem.getAttribute('data-hovercard-id') || '';
             const name = elem.getAttribute('name') || elem.textContent?.trim() || '';
 
-            if (email) {
-                recipients.push({
-                    email,
-                    name: name || email,
-                    isInternal: false, // Personal use: always external
-                    domain: extractDomain(email),
-                });
+            if (email && email.includes('@')) { // 簡単なバリデーション追加
+                // 重複チェック
+                const isDuplicate = recipients.some(r => r.email === email);
+                if (!isDuplicate) {
+                    recipients.push({
+                        email,
+                        name: name || email,
+                        isInternal: false, // Personal use: always external
+                        domain: extractDomain(email),
+                    });
+                }
             }
         });
     });
@@ -94,15 +119,43 @@ function extractAttachments(): string[] {
     const attachments: string[] = [];
 
     // 添付ファイル表示エリア
-    const attachmentElements = document.querySelectorAll('[data-tooltip*="添付"], [data-tooltip*="Attach"], .vI');
+    // .vI は添付ファイルチップのクラス
+    // [data-tooltip*="添付"] は広すぎるため、ボタンを除外する
+    const attachmentElements = document.querySelectorAll('.vI, [data-tooltip*="添付"]:not([role="button"]), [aria-label*="添付"]:not([role="button"])');
 
     attachmentElements.forEach((elem) => {
-        const filename = elem.getAttribute('data-tooltip') ||
-            elem.getAttribute('title') ||
+        let filename = elem.getAttribute('data-tooltip') ||
+            elem.getAttribute('aria-label') ||
             elem.textContent?.trim();
 
+        // 不要な文字列を除外
+        if (filename === 'ファイルを添付' || filename === 'Attach files') {
+            return;
+        }
+
+        // サイズ情報などが含まれる場合があるため、簡易的なクリーニング（必要であれば）
+        // Gmailの添付ファイルチップは通常 filename (size) のような形式ではないが、
+        // aria-labelには "ファイル名.pdf プレビュー" のような余計な文字が入る可能性がある
+
         if (filename && !attachments.includes(filename)) {
-            attachments.push(filename);
+            // 明らかにボタンっぽい文言は除外
+            if (filename.includes('添付') && filename.length < 10 && !filename.includes('.')) {
+                return;
+            }
+
+            // ゴミ掃除: "添付ファイルを表示するには..." などのアクセシビリティテキストを削除
+            // 例: "1-ポートフォリオ.txt。添付ファイルを表示するには Enter キーを..."
+            let cleanName = filename.split('添付ファイルを表示するには')[0]
+                .split('To view the attachment')[0] // 英語対応
+                .trim()
+                .replace(/[。\.]$/, ''); // 末尾の句点などを削除
+
+            // 先頭の "添付ファイル " を削除
+            cleanName = cleanName.replace(/^添付ファイル\s*/, '');
+
+            if (cleanName && !attachments.includes(cleanName)) {
+                attachments.push(cleanName);
+            }
         }
     });
 

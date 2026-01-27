@@ -6,6 +6,7 @@ export interface Recipient {
 }
 
 export interface EmailData {
+    sender: string;
     recipients: Recipient[];
     subject: string;
     body: string;

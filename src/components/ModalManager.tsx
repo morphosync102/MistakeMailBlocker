@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CheckResults, EmailData } from '../types';
 import { CheckModal } from './CheckModal';
 import { ConfirmModal } from './ConfirmModal';
+import { FinalConfirmModal } from './FinalConfirmModal';
 import { generateSendCode } from '../utils';
 
 interface ModalManagerProps {
@@ -11,7 +12,7 @@ interface ModalManagerProps {
     onCancel: () => void;
 }
 
-type ModalState = 'check' | 'confirm' | null;
+type ModalState = 'check' | 'confirm' | 'final-check' | null;
 
 export const ModalManager: React.FC<ModalManagerProps> = ({
     emailData,
@@ -26,8 +27,16 @@ export const ModalManager: React.FC<ModalManagerProps> = ({
         setModalState('confirm');
     };
 
-    const handleBack = () => {
+    const handleConfirmNext = () => {
+        setModalState('final-check');
+    };
+
+    const handleBackToCheck = () => {
         setModalState('check');
+    };
+
+    const handleBackToConfirm = () => {
+        setModalState('confirm');
     };
 
     const handleCancel = () => {
@@ -57,7 +66,15 @@ export const ModalManager: React.FC<ModalManagerProps> = ({
                     checkResults={checkResults}
                     emailData={emailData}
                     sendCode={sendCode}
-                    onBack={handleBack}
+                    onBack={handleBackToCheck}
+                    onCancel={handleCancel}
+                    onNext={handleConfirmNext}
+                />
+            )}
+
+            {modalState === 'final-check' && (
+                <FinalConfirmModal
+                    onBack={handleBackToConfirm}
                     onCancel={handleCancel}
                     onSend={handleSend}
                 />
