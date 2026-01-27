@@ -66,19 +66,10 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
                             </div>
 
                             <div>
-                                <span className="font-semibold text-gray-700">社外) </span>
-                                <span className="text-gray-600">
+                                <span className="font-semibold text-gray-700">宛先) </span>
+                                <span className="text-gray-700">
                                     {checkResults.externalRecipients.length > 0
                                         ? checkResults.externalRecipients.map(r => r.name).join('; ')
-                                        : 'なし'}
-                                </span>
-                            </div>
-
-                            <div>
-                                <span className="font-semibold text-gray-700">社内) </span>
-                                <span className="text-gray-600">
-                                    {checkResults.internalRecipients.length > 0
-                                        ? checkResults.internalRecipients.map(r => r.name).join('; ')
                                         : 'なし'}
                                 </span>
                             </div>

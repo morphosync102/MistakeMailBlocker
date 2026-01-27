@@ -49,20 +49,9 @@ export const CheckModal: React.FC<CheckModalProps> = ({
                         result={checkResults.recipients}
                         details={
                             <div>
-                                {checkResults.domains.length > 0 && (
+                                {checkResults.externalRecipients.length > 0 ? (
                                     <div className="mb-3">
-                                        <div className="font-semibold text-xs text-gray-500 mb-1">社外ドメイン:</div>
-                                        <div className="text-gray-700">
-                                            {checkResults.domains.map((domain, i) => (
-                                                <div key={i}>{domain}</div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {checkResults.externalRecipients.length > 0 && (
-                                    <div className="mb-3">
-                                        <div className="font-semibold text-xs text-gray-500 mb-1">社外宛て:</div>
+                                        <div className="font-semibold text-xs text-gray-500 mb-1">宛先一覧:</div>
                                         <div className="text-gray-700">
                                             {checkResults.externalRecipients.map((r, i) => (
                                                 <div key={i}>
@@ -73,21 +62,8 @@ export const CheckModal: React.FC<CheckModalProps> = ({
                                             ))}
                                         </div>
                                     </div>
-                                )}
-
-                                {checkResults.internalRecipients.length > 0 && (
-                                    <div>
-                                        <div className="font-semibold text-xs text-gray-500 mb-1">社内宛て:</div>
-                                        <div className="text-gray-700">
-                                            {checkResults.internalRecipients.map((r, i) => (
-                                                <div key={i}>
-                                                    {r.name}
-                                                    <br />
-                                                    <span className="text-xs text-gray-500">({r.email})</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
+                                ) : (
+                                    <div className="text-gray-500">（宛先なし）</div>
                                 )}
                             </div>
                         }

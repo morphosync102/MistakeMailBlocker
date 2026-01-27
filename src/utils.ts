@@ -1,22 +1,3 @@
-// 自社ドメインの設定 (ここを環境に合わせて変更してください)
-const COMPANY_DOMAINS = ['example.com', 'yourcompany.com'];
-
-/**
- * メールアドレスが自社ドメインかどうかをチェック
- */
-export function isInternalDomain(email: string): boolean {
-    const lowerEmail = email.toLowerCase();
-
-    for (const domain of COMPANY_DOMAINS) {
-        const lowerDomain = domain.toLowerCase();
-        if (lowerEmail.endsWith(`@${lowerDomain}`) || lowerEmail.endsWith(`.${lowerDomain}`)) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 /**
  * メールアドレスからドメインを抽出
  */
@@ -33,13 +14,6 @@ export function hasAttachmentKeywords(text: string): boolean {
     const keywords = ['添付', 'attached', 'attachment'];
     const lowerText = text.toLowerCase();
     return keywords.some(keyword => lowerText.includes(keyword));
-}
-
-/**
- * ファイル名がZIPファイルかどうかをチェック
- */
-export function isZipFile(filename: string): boolean {
-    return filename.toLowerCase().endsWith('.zip');
 }
 
 /**

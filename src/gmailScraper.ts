@@ -1,5 +1,5 @@
 import { EmailData, Recipient } from './types';
-import { isInternalDomain, extractDomain, hasAttachmentKeywords, isZipFile } from './utils';
+import { extractDomain, hasAttachmentKeywords } from './utils';
 
 /**
  * Gmailの作成画面からメールデータを抽出
@@ -24,7 +24,7 @@ export function extractEmailData(): EmailData | null {
             body,
             attachments,
             hasAttachmentKeywords: hasAttachmentKeywords(subject + ' ' + body),
-            hasZipFiles: attachments.some(isZipFile),
+            hasZipFiles: attachments.some(f => f.toLowerCase().endsWith('.zip')),
         };
     } catch (error) {
         console.error('メールデータの抽出に失敗しました:', error);
@@ -60,7 +60,7 @@ function extractRecipients(): Recipient[] {
                 recipients.push({
                     email,
                     name: name || email,
-                    isInternal: isInternalDomain(email),
+                    isInternal: false, // Personal use: always external
                     domain: extractDomain(email),
                 });
             }
