@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
-import { CheckResults, EmailData } from '../types';
+import { EmailData } from '../types';
 import { CheckModal } from './CheckModal';
 import { ConfirmModal } from './ConfirmModal';
 import { FinalConfirmModal } from './FinalConfirmModal';
-import { generateSendCode } from '../utils';
 
 interface ModalManagerProps {
     emailData: EmailData;
-    checkResults: CheckResults;
     onSend: () => void;
     onCancel: () => void;
 }
@@ -16,12 +14,10 @@ type ModalState = 'check' | 'confirm' | 'final-check' | null;
 
 export const ModalManager: React.FC<ModalManagerProps> = ({
     emailData,
-    checkResults,
     onSend,
     onCancel,
 }) => {
     const [modalState, setModalState] = useState<ModalState>('check');
-    const [sendCode] = useState(generateSendCode());
 
     const handleNext = () => {
         setModalState('confirm');
@@ -29,10 +25,6 @@ export const ModalManager: React.FC<ModalManagerProps> = ({
 
     const handleConfirmNext = () => {
         setModalState('final-check');
-    };
-
-    const handleBackToCheck = () => {
-        setModalState('check');
     };
 
     const handleBackToConfirm = () => {
@@ -51,22 +43,51 @@ export const ModalManager: React.FC<ModalManagerProps> = ({
 
     if (!modalState) return null;
 
+    // Helper to extract email lists
+    const toAddresses = emailData.recipients
+        .filter(r => r.type === 'to')
+        .map(r => r.email);
+
+    const ccAddresses = emailData.recipients
+        .filter(r => r.type === 'cc')
+        .map(r => r.email);
+
+    const bccAddresses = emailData.recipients
+        .filter(r => r.type === 'bcc')
+        .map(r => r.email);
+
+    // Calculate derived values for ConfirmModal
+    const lines = emailData.body.split(/\r\n|\r|\n/);
+    const lineCount = lines.length;
+    const bodyPreview = emailData.body;
+
     return (
         <>
             {modalState === 'check' && (
                 <CheckModal
-                    checkResults={checkResults}
+                    fromAddress={emailData.sender}
+                    toAddresses={toAddresses}
+                    ccAddresses={ccAddresses}
+                    bccAddresses={bccAddresses}
+                    subject={emailData.subject}
+                    hasAttachment={emailData.attachments.length > 0}
+                    hasZipFile={emailData.hasZipFiles}
+                    bodyMentionsAttachment={emailData.hasAttachmentKeywords}
+                    attachments={emailData.attachments}
                     onCancel={handleCancel}
                     onNext={handleNext}
                 />
             )}
 
+// Removed unused checkResults from props and logic
+
             {modalState === 'confirm' && (
                 <ConfirmModal
-                    checkResults={checkResults}
-                    emailData={emailData}
-                    sendCode={sendCode}
-                    onBack={handleBackToCheck}
+                    toAddresses={toAddresses}
+                    ccAddresses={ccAddresses}
+                    bccAddresses={bccAddresses}
+                    bodyPreview={bodyPreview}
+                    lineCount={lineCount}
                     onCancel={handleCancel}
                     onNext={handleConfirmNext}
                 />
@@ -74,9 +95,8 @@ export const ModalManager: React.FC<ModalManagerProps> = ({
 
             {modalState === 'final-check' && (
                 <FinalConfirmModal
-                    onBack={handleBackToConfirm}
-                    onCancel={handleCancel}
-                    onSend={handleSend}
+                    onCancel={handleBackToConfirm} // "Go back" button
+                    onConfirm={handleSend}
                 />
             )}
         </>

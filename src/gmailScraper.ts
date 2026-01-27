@@ -65,7 +65,7 @@ function extractRecipients(): Recipient[] {
         { selector: '[name="bcc"]', type: 'bcc' },
     ];
 
-    recipientFields.forEach(({ selector }) => {
+    recipientFields.forEach(({ selector, type }) => {
         const field = document.querySelector(selector);
         if (!field) return;
 
@@ -86,6 +86,7 @@ function extractRecipients(): Recipient[] {
                         name: name || email,
                         isInternal: false, // Personal use: always external
                         domain: extractDomain(email),
+                        type: type as 'to' | 'cc' | 'bcc',
                     });
                 }
             }

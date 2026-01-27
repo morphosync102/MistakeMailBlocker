@@ -1,138 +1,221 @@
-import React, { useState } from 'react';
-import { CheckResults, EmailData } from '../types';
-import { getTimeBasedColor } from '../utils';
+import { Shield, X, CheckCircle2, XCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useState, useEffect } from 'react';
 
 interface ConfirmModalProps {
-    checkResults: CheckResults;
-    emailData: EmailData;
-    sendCode: string;
-    onBack: () => void;
-    onCancel: () => void;
-    onNext: () => void;
+  onNext: () => void;
+  onCancel: () => void;
+  toAddresses: string[];
+  ccAddresses: string[];
+  bccAddresses: string[];
+  bodyPreview: string;
+  lineCount: number;
 }
 
-export const ConfirmModal: React.FC<ConfirmModalProps> = ({
-    checkResults,
-    emailData,
-    sendCode,
-    onBack,
-    onCancel,
-    onNext,
-}) => {
-    const [inputCode, setInputCode] = useState('');
+export function ConfirmModal({
+  onNext,
+  onCancel,
+  toAddresses,
+  ccAddresses,
+  bccAddresses,
+  bodyPreview,
+  lineCount,
+}: ConfirmModalProps) {
+  const [securityCode, setSecurityCode] = useState('');
+  const [inputCode, setInputCode] = useState('');
+  const [showError, setShowError] = useState(false);
 
-    const hasExternal = checkResults.hasExternalRecipients;
-    const canSend = !hasExternal || inputCode === sendCode;
+  useEffect(() => {
+    // Generate 4-digit random code
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
+    setSecurityCode(code);
+  }, []);
 
-    const timeColor = getTimeBasedColor();
+  const totalRecipients = toAddresses.length + ccAddresses.length + bccAddresses.length;
+  const isCodeValid = inputCode.length === 4 && inputCode === securityCode;
+  const hasInput = inputCode.length > 0;
 
-    // 本文の行数を計算
-    const bodyLines = emailData.body.split('\n').length;
+  const handleInputChange = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 4);
+    setInputCode(digits);
+    setShowError(false);
+  };
 
-    const bodyMessage =
-        !emailData.body ? '本文がありません。' :
-            bodyLines >= 100 ? `本文が ${bodyLines}行あります。返信が延々と残っている可能性があります。` :
-                `本文は ${bodyLines}行あります。`;
+  const handleSubmit = () => {
+    if (isCodeValid) {
+      onNext();
+    } else if (hasInput) {
+      setShowError(true);
+    }
+  };
 
-    const bodyTextColor =
-        !emailData.body || bodyLines >= 100 ? 'text-orange-600' : 'text-gray-600';
-
-    return (
-        <div className="modal-overlay" onClick={onCancel}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                {/* ヘッダー - 時間帯による色分け */}
-                <div className={`${timeColor} text-white  p-6`}>
-                    <h2 className="text-2xl font-bold">誤送信防止 - 最終確認</h2>
-                    <p className="text-white text-opacity-90 text-sm mt-1">
-                        本当に送信してよろしいですか？
-                    </p>
-                </div>
-
-                {/* コンテンツ */}
-                <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
-                    {/* 警告メッセージ */}
-                    <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
-                        <p className="text-yellow-800 font-semibold">⚠️ 送信前の最終確認</p>
-                        <p className="text-yellow-700 text-sm mt-1">
-                            宛先と本文を再度確認してください
-                        </p>
-                    </div>
-
-                    {/* メール内容サマリー */}
-                    <div className="section-box">
-                        <div className="space-y-3 text-sm">
-                            <div>
-                                <span className={bodyTextColor}>{bodyMessage}</span>
-                            </div>
-
-                            <div>
-                                <span className="font-semibold text-gray-700">宛先) </span>
-                                <span className="text-gray-700">
-                                    {checkResults.externalRecipients.length > 0
-                                        ? checkResults.externalRecipients.map(r => r.name).join('; ')
-                                        : 'なし'}
-                                </span>
-                            </div>
-
-                            <div>
-                                <span className="font-semibold text-gray-700">件名) </span>
-                                <span className="text-gray-600">{emailData.subject}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* 本文プレビュー */}
-                    <div className="section-box">
-                        <div className="font-semibold text-gray-700 mb-2">本文プレビュー:</div>
-                        <div className="bg-gray-50 p-3 rounded text-sm max-h-48 overflow-y-auto whitespace-pre-wrap text-gray-700">
-                            {emailData.body || '(本文なし)'}
-                        </div>
-                    </div>
-
-                    {/* 送信コード入力 (社外向けの場合のみ) */}
-                    {hasExternal && (
-                        <div className="section-box bg-blue-50 border-blue-200">
-                            <div className="mb-3">
-                                <div className="font-semibold text-blue-900 mb-2">
-                                    🔐 送信コード: <span className="text-2xl font-mono tracking-wider">{sendCode}</span>
-                                </div>
-                                <p className="text-sm text-blue-700">
-                                    上記の4桁の数字を入力してください
-                                </p>
-                            </div>
-
-                            <input
-                                type="text"
-                                value={inputCode}
-                                onChange={(e) => setInputCode(e.target.value)}
-                                placeholder="送信コードを入力"
-                                maxLength={4}
-                                className="w-full px-4 py-2 border-2 border-blue-300 rounded-lg text-center text-2xl font-mono tracking-widest focus:outline-none focus:border-blue-500"
-                                autoFocus
-                            />
-                        </div>
-                    )}
-                </div>
-
-                {/* フッター */}
-                <div className="border-t border-gray-200 p-6 flex justify-between bg-gray-50">
-                    <button onClick={onBack} className="btn btn-secondary">
-                        戻る
-                    </button>
-                    <div className="flex gap-3">
-                        <button onClick={onCancel} className="btn btn-secondary">
-                            送信キャンセル
-                        </button>
-                        <button
-                            onClick={onNext}
-                            className="btn btn-danger"
-                            disabled={!canSend}
-                        >
-                            次へ
-                        </button>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[10000] animate-in fade-in duration-200">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl max-h-[85vh] flex flex-col animate-in slide-in-from-bottom-4 duration-300">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">セキュリティコード入力</h2>
+            <p className="text-sm text-gray-500 mt-0.5">送信前に確認してください</p>
+          </div>
+          <button
+            onClick={onCancel}
+            className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-md hover:bg-gray-100"
+          >
+            <X className="size-5" />
+          </button>
         </div>
-    );
-};
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto px-6 py-5">
+          {/* Email summary */}
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <div className="text-xs font-medium text-gray-500 mb-1">宛先数</div>
+              <div className="text-2xl font-semibold text-gray-900">{totalRecipients}</div>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <div className="text-xs font-medium text-gray-500 mb-1">行数</div>
+              <div className="text-2xl font-semibold text-gray-900">{lineCount}</div>
+            </div>
+          </div>
+
+          {/* Recipients */}
+          <div className="mb-5">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">宛先</h3>
+            <div className="bg-gray-50 rounded-lg border border-gray-200">
+              {toAddresses.length > 0 && (
+                <div className="p-3 border-b border-gray-200 last:border-b-0">
+                  <div className="text-xs font-medium text-gray-500 mb-2">To</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {toAddresses.map((email, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-2 py-0.5 bg-white border border-gray-300 text-gray-700 text-xs rounded"
+                      >
+                        {email}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {ccAddresses.length > 0 && (
+                <div className="p-3 border-b border-gray-200 last:border-b-0">
+                  <div className="text-xs font-medium text-gray-500 mb-2">CC</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {ccAddresses.map((email, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-2 py-0.5 bg-white border border-gray-300 text-gray-700 text-xs rounded"
+                      >
+                        {email}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {bccAddresses.length > 0 && (
+                <div className="p-3">
+                  <div className="text-xs font-medium text-gray-500 mb-2">BCC</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {bccAddresses.map((email, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-2 py-0.5 bg-white border border-gray-300 text-gray-700 text-xs rounded"
+                      >
+                        {email}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Body preview */}
+          <div className="mb-5">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">本文プレビュー</h3>
+            <div className="bg-gray-50 rounded-lg border border-gray-200 p-3 max-h-60 overflow-y-auto">
+              <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">
+                {bodyPreview || '(本文なし)'}
+              </pre>
+            </div>
+          </div>
+
+          {/* Security code input */}
+          <div className="bg-indigo-50 rounded-lg border border-indigo-200 p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Shield className="size-5 text-indigo-600" />
+              <h3 className="text-sm font-semibold text-gray-900">セキュリティ確認</h3>
+            </div>
+
+            <div className="bg-white rounded-lg p-4 mb-4 text-center border border-indigo-200">
+              <div className="text-xs text-gray-500 mb-2 uppercase tracking-wide">コード</div>
+              <div className="text-4xl font-bold text-indigo-600 tracking-[0.3em] font-mono">
+                {securityCode}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                上記のコードを入力してください
+              </label>
+              <Input
+                type="text"
+                value={inputCode}
+                onChange={(e) => handleInputChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && isCodeValid) {
+                    handleSubmit();
+                  }
+                }}
+                placeholder="4桁のコード"
+                maxLength={4}
+                className={`text-center text-2xl font-mono tracking-wider transition-colors ${showError && !isCodeValid
+                  ? 'border-red-400 focus-visible:ring-red-400'
+                  : isCodeValid
+                    ? 'border-green-500 focus-visible:ring-green-500'
+                    : 'border-gray-300'
+                  }`}
+              />
+              <div className="mt-2 min-h-[20px]">
+                {isCodeValid && (
+                  <p className="text-sm text-green-700 flex items-center gap-1.5">
+                    <CheckCircle2 className="size-4" />
+                    確認完了
+                  </p>
+                )}
+                {showError && !isCodeValid && hasInput && (
+                  <p className="text-sm text-red-600 flex items-center gap-1.5">
+                    <XCircle className="size-4" />
+                    コードが間違っています
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 bg-gray-50">
+          <div className="text-sm text-gray-500">
+            {!isCodeValid && <span>セキュリティコードを入力してください</span>}
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={onCancel} className="min-w-[100px]">
+              キャンセル
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={!isCodeValid}
+              className="min-w-[100px] bg-indigo-600 hover:bg-indigo-700 text-white disabled:bg-gray-300 disabled:text-gray-500"
+            >
+              次へ
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

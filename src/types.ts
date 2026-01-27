@@ -3,6 +3,7 @@ export interface Recipient {
     name: string;
     isInternal: boolean;
     domain: string;
+    type: 'to' | 'cc' | 'bcc';
 }
 
 export interface EmailData {

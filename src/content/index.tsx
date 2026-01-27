@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ModalManager } from '../components/ModalManager';
 import { extractEmailData, findSendButton } from '../gmailScraper';
-import { validateEmail } from '../validator';
 import '../styles.css';
 
 let isIntercepting = false;
@@ -52,17 +51,14 @@ function handleSendClick(event: MouseEvent) {
         return;
     }
 
-    // バリデーション
-    const checkResults = validateEmail(emailData);
-
     // モーダルを表示
-    showModal(emailData, checkResults);
+    showModal(emailData);
 }
 
 /**
  * モーダルを表示
  */
-function showModal(emailData: any, checkResults: any) {
+function showModal(emailData: any) {
     // モーダル用のコンテナを作成
     const modalContainer = document.createElement('div');
     modalContainer.id = 'gmail-mistake-blocker-modal';
@@ -86,7 +82,6 @@ function showModal(emailData: any, checkResults: any) {
         <React.StrictMode>
             <ModalManager
                 emailData={emailData}
-                checkResults={checkResults}
                 onSend={handleSend}
                 onCancel={handleCancel}
             />
@@ -106,7 +101,7 @@ function proceedWithSend() {
         return;
     }
 
-    // 送信許可フグを立てる
+    // 送信許可フラグを立てる
     allowSend = true;
 
     // 送信ボタンをクリック
