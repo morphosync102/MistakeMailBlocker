@@ -8,11 +8,21 @@ const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '..');
 const distDir = path.join(projectRoot, 'dist');
 
-// マニフェストをコピー
-fs.copyFileSync(
-    path.join(projectRoot, 'manifest.json'),
-    path.join(distDir, 'manifest.json')
-);
+// マニフェストをコピー (Outlook用)
+if (fs.existsSync(path.join(projectRoot, 'assets/manifest.xml'))) {
+    fs.copyFileSync(
+        path.join(projectRoot, 'assets/manifest.xml'),
+        path.join(distDir, 'manifest.xml')
+    );
+} else {
+    // Fallback or chrome manifest logic if needed, but we prioritize Outlook
+    if (fs.existsSync(path.join(projectRoot, 'manifest.json'))) {
+        fs.copyFileSync(
+            path.join(projectRoot, 'manifest.json'),
+            path.join(distDir, 'manifest.json')
+        );
+    }
+}
 
 // アイコンディレクトリを作成（存在しない場合）
 // アイコンディレクトリを作成（存在しない場合）
