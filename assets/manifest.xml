@@ -28,7 +28,7 @@
   <FormSettings>
     <Form xsi:type="ItemRead">
       <DesktopSettings>
-        <SourceLocation DefaultValue="https://localhost:3000/outlook/taskpane.html" />
+        <SourceLocation DefaultValue="https://localhost:3000/src/outlook/dialog.html" />
       </DesktopSettings>
     </Form>
   </FormSettings>
@@ -56,7 +56,7 @@
       </Hosts>
       <Resources>
         <bt:Urls>
-          <bt:Url id="funcUrl" DefaultValue="https://localhost:3000/outlook/launchevent.js" />
+          <bt:Url id="funcUrl" DefaultValue="https://localhost:3000/src/outlook/launchevent.html" />
         </bt:Urls>
       </Resources>
     </VersionOverrides>

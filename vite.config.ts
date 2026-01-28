@@ -20,7 +20,7 @@ export default defineConfig({
         rollupOptions: {
             input: {
                 taskpane: path.resolve(__dirname, 'src/outlook/dialog.html'),
-                launchevent: path.resolve(__dirname, 'src/outlook/launchevent.ts'),
+                launchevent: path.resolve(__dirname, 'src/outlook/launchevent.html'),
             },
             output: {
                 entryFileNames: 'outlook/[name].js',
