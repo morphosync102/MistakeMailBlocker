@@ -29,14 +29,17 @@
     <Form xsi:type="ItemRead">
       <DesktopSettings>
         <SourceLocation DefaultValue="https://localhost:3000/src/outlook/dialog.html" />
+        <RequestedHeight>250</RequestedHeight>
+      </DesktopSettings>
+    </Form>
+    <Form xsi:type="ItemEdit">
+      <DesktopSettings>
+        <SourceLocation DefaultValue="https://localhost:3000/src/outlook/dialog.html" />
       </DesktopSettings>
     </Form>
   </FormSettings>
   <Permissions>ReadWriteMailbox</Permissions>
-  <Rule xsi:type="RuleCollection" Mode="Or">
-    <Rule xsi:type="ItemIs" ItemType="Message" FormType="Edit" />
-  </Rule>
-  <DisableEntityHighlighting>false</DisableEntityHighlighting>
+  <Rule xsi:type="ItemIs" ItemType="Message" FormType="ReadOrEdit" />
   <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides" xsi:type="VersionOverridesV1_0">
     <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides/1.1" xsi:type="VersionOverridesV1_1">
       <Requirements>
@@ -51,13 +54,48 @@
             <ExtensionPoint xsi:type="Events">
               <Event Type="ItemSend" FunctionExecution="synchronous" FunctionName="onItemSend" />
             </ExtensionPoint>
+            <ExtensionPoint xsi:type="MessageComposeCommandSurface">
+              <OfficeTab id="TabDefault">
+                <Group id="msgComposeGroup">
+                  <Label resid="groupLabel" />
+                  <Control xsi:type="Button" id="msgComposeOpenPaneButton">
+                    <Label resid="taskpaneButtonLabel" />
+                    <Supertip>
+                      <Title resid="taskpaneButtonLabel" />
+                      <Description resid="taskpaneButtonDesc" />
+                    </Supertip>
+                    <Icon>
+                      <bt:Image size="16" resid="icon16" />
+                      <bt:Image size="32" resid="icon32" />
+                      <bt:Image size="80" resid="icon80" />
+                    </Icon>
+                    <Action xsi:type="ShowTaskpane">
+                      <SourceLocation resid="taskpaneUrl" />
+                    </Action>
+                  </Control>
+                </Group>
+              </OfficeTab>
+            </ExtensionPoint>
           </DesktopFormFactor>
         </Host>
       </Hosts>
       <Resources>
+        <bt:Images>
+          <bt:Image id="icon16" DefaultValue="https://localhost:3000/icons/icon-16.png" />
+          <bt:Image id="icon32" DefaultValue="https://localhost:3000/icons/icon-32.png" />
+          <bt:Image id="icon80" DefaultValue="https://localhost:3000/icons/icon-80.png" />
+        </bt:Images>
         <bt:Urls>
           <bt:Url id="funcUrl" DefaultValue="https://localhost:3000/src/outlook/launchevent.html" />
+          <bt:Url id="taskpaneUrl" DefaultValue="https://localhost:3000/src/outlook/dialog.html" />
         </bt:Urls>
+        <bt:ShortStrings>
+          <bt:String id="groupLabel" DefaultValue="誤送信防止" />
+          <bt:String id="taskpaneButtonLabel" DefaultValue="設定確認" />
+        </bt:ShortStrings>
+        <bt:LongStrings>
+          <bt:String id="taskpaneButtonDesc" DefaultValue="誤送信防止の設定やステータスを確認します" />
+        </bt:LongStrings>
       </Resources>
     </VersionOverrides>
   </VersionOverrides>
